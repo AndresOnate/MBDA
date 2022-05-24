@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Details[
+<!ELEMENT Details (Description,Language,Tag+)>
+<!ELEMENT Description (#PCDATA)>
+<!ELEMENT Tag (DescriptionTag)>
+<!ELEMENT DescriptionTag (#PCDATA)>
+<!ELEMENT Language (#PCDATA)>
+<!ATTLIST Tag name CDATA #REQUIRED>
+]>
+<Details>
+    <Description> PruebaXML </Description>
+    <Language>Español</Language>
+    <Tag name = "XMLOk">
+        <DescriptionTag> violent content </DescriptionTag>
+    </Tag>
+</Details>
+
