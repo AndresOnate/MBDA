@@ -1,0 +1,772 @@
+--CICLO 1: Tablas
+
+---usuarios
+CREATE TABLE usuarios(
+    id NUMBER(5),
+    email VARCHAR(100) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    createdAt DATE NOT NULL
+ );
+ 
+ 
+ ---likes
+CREATE TABLE likes(
+    usuarios_id NUMBER(5),
+    contenidos_id NUMBER(5)
+ );
+ 
+ 
+ 
+ ---cuentas
+CREATE TABLE cuentas(
+    id NUMBER(5),
+    name VARCHAR2(70) NOT NULL,
+    createdAt DATE NOT NULL,
+    suscribers NUMBER(5) NOT NULL,
+    usuarios_id NUMBER(5) NOT NULL   
+ );
+ 
+ 
+ ---labels
+CREATE TABLE labels(
+    exclusividades_id NUMBER(5) NOT NULL,
+    label VARCHAR2(10)
+ );
+ 
+ 
+ ---exclusividades
+CREATE TABLE exclusividades(
+    code VARCHAR2(9) NOT NULL,
+    e_order NUMBER(3) NOT NULL,
+    name VARCHAR2(55) NOT NULL,
+    price NUMBER(9),
+    duration  NUMBER(2),
+    cuentas_id NUMBER(5)
+ );
+ 
+ 
+ 
+ ---suscripciones
+ CREATE TABLE suscripciones(
+    id NUMBER(5),
+    createdAt DATE NOT NULL,
+    detail VARCHAR2(50),
+    cuentas_id NUMBER(5) NOT NULL,
+    suscritoA NUMBER(5) NOT NULL
+ );
+ 
+ 
+ ---etapas
+CREATE TABLE etapas(
+    startAt DATE NOT NULL,
+    endAt DATE,
+    price NUMBER(9) NOT NULL,
+    status VARCHAR2(20) NOT NULL,
+    exclusividades_id NUMBER(5) NOT NULL,
+    suscripciones_id NUMBER(5)
+ );
+ 
+ 
+ 
+ ---contenidos
+ CREATE TABLE contenidos(
+    id NUMBER(10) NOT NULL,
+    title VARCHAR2(20) NOT NULL,
+    publishingDate DATE NOT NULL,
+    description VARCHAR(30),
+    usuarios_id NUMBER(5) NOT NULL,
+    exclusividades_id NUMBER(5) NOT NULL
+ );
+ 
+ 
+ ---videos
+CREATE TABLE videos(
+    contenidos_id NUMBER(5),
+    duration NUMBER(11) NOT NULL
+ );
+ 
+ 
+ ---streamings
+CREATE TABLE streamings(
+    contenidos_id NUMBER(5),
+    plannedDate DATE NOT NULL,
+    actualDate DATE,
+    duration NUMBER(4)
+ );
+ 
+ 
+ 
+ ---posts
+CREATE TABLE posts(
+    contenidos_id NUMBER(5),
+    text VARCHAR2(50)
+);
+ 
+ 
+ --CICLO 1: XTablas
+ 
+ -- usuarios
+ 
+ALTER TABLE usuarios ADD (
+    CONSTRAINT PK_USUARIOS PRIMARY KEY(id),
+    CONSTRAINT UK_USUARIOS_EMAIL UNIQUE(email)
+);
+
+-- cuentas
+ALTER TABLE cuentas ADD (
+    CONSTRAINT PK_CUENTAS PRIMARY KEY(id),
+    CONSTRAINT FK_CUENTAS_USUARIOS_ID FOREIGN KEY(usuarios_id) REFERENCES usuarios(id)
+);
+
+
+-- suscripciones
+ALTER TABLE suscripciones ADD (
+    CONSTRAINT PK_SUSCRIPCIONES PRIMARY KEY(id),
+    CONSTRAINT FK_SUSCRIPCIONES_CUENTAS_ID FOREIGN KEY(cuentas_id) REFERENCES cuentas(id),
+    CONSTRAINT FK_SUSCRIPCIONES_SUSCRITOA FOREIGN KEY(suscritoA) REFERENCES cuentas(id)
+);
+
+
+-- exclusividades
+ALTER TABLE exclusividades ADD (
+    CONSTRAINT PK_EXCLUSIVIDADES PRIMARY KEY(cuentas_id),
+    CONSTRAINT FK_EXCLUSIVIDADES FOREIGN KEY(cuentas_id) REFERENCES cuentas(id)
+);
+
+
+-- labels
+ALTER TABLE labels ADD (
+    CONSTRAINT PK_LABELS PRIMARY KEY(label),
+    CONSTRAINT FK_LABELS_EXCLUSIVIDADES_ID FOREIGN KEY(exclusividades_id) REFERENCES exclusividades(cuentas_id)
+);
+
+
+-- etapas
+ALTER TABLE etapas ADD (
+    CONSTRAINT PK_ETAPAS PRIMARY KEY(suscripciones_id),
+    CONSTRAINT FK_ETAPAS_SUSCRIPCIONES_ID FOREIGN KEY(suscripciones_id) REFERENCES suscripciones(id),
+    CONSTRAINT FK_ETAPAS_EXCLUSIVIDADES_ID FOREIGN KEY(exclusividades_id) REFERENCES exclusividades(cuentas_id)
+);
+
+
+
+-- contenidos
+ALTER TABLE contenidos ADD (
+    CONSTRAINT PK_CONTENIDOS PRIMARY KEY(id),
+    CONSTRAINT FK_CONTENIDOS_USUARIOS_ID FOREIGN KEY(usuarios_id) REFERENCES usuarios(id),
+    CONSTRAINT FK_CONTENIDOS_E_ID FOREIGN KEY(exclusividades_id) REFERENCES exclusividades(cuentas_id)
+);
+
+
+
+-- videos
+ALTER TABLE videos ADD (
+    CONSTRAINT PK_VIDEOS PRIMARY KEY(contenidos_id),
+    CONSTRAINT FK_VIDEOS_CONTENIDOS_ID FOREIGN KEY(contenidos_id) REFERENCES contenidos(id)
+);
+
+
+-- streamings
+ALTER TABLE streamings ADD (
+    CONSTRAINT PK_STREAMING PRIMARY KEY(contenidos_id),
+    CONSTRAINT FK_STREAMING_CONTENIDOS_ID FOREIGN KEY(contenidos_id) REFERENCES contenidos(id)
+);
+
+
+
+-- posts
+ALTER TABLE posts ADD (
+    CONSTRAINT PK_POSTS PRIMARY KEY(contenidos_id),
+    CONSTRAINT FK_POSTS_CONTENIDOS_ID FOREIGN KEY(contenidos_id) REFERENCES contenidos(id)
+);
+
+
+
+-- likes
+ALTER TABLE likes ADD (
+    CONSTRAINT PK_LIKES PRIMARY KEY(usuarios_id, contenidos_id),
+    CONSTRAINT FK_LIKES_USUARIOS_ID FOREIGN KEY(usuarios_id) REFERENCES usuarios(id),
+    CONSTRAINT FK_LIKES_CONTENIDOS_ID FOREIGN KEY(contenidos_id) REFERENCES contenidos(id)
+);
+
+-- CICLO 1: PoblarOK (1) 
+
+-- usuarios
+INSERT INTO usuarios VALUES (1,'andres@gmail.com','Andrés', '04/03/2010');
+INSERT INTO usuarios VALUES (2,'mateo@gmail.com','Mateo','04/05/2012');
+INSERT INTO usuarios VALUES (3,'felipe@gmail.com','Felipe','23/09/2019');
+
+-- cuentas
+INSERT INTO cuentas VALUES (9001,'Por si no lo viste', '26/08/2017',0, 1);
+INSERT INTO cuentas VALUES (9002,'Auron','12/12/2013',100, 2);
+INSERT INTO cuentas VALUES (9003,'Te lo resumo', '14/10/2012',9999, 1);
+
+-- suscripciones
+INSERT INTO suscripciones VALUES (4025,'04/03/2022', NULL, 9001, 9002);
+INSERT INTO suscripciones VALUES (4026,'13/12/2018', NULL, 9003,9001);
+INSERT INTO suscripciones VALUES (4027,'13/12/2014', NULL ,9003,9002);
+INSERT INTO suscripciones VALUES (4028,'25/02/2015', NULL ,9002,9002);
+
+-- exclusividades
+INSERT INTO exclusividades VALUES ('EX-120510',1, 'Bronce', 5, NULL, 9001);
+INSERT INTO exclusividades VALUES ('EX-120611',2, 'Plata', 13, NULL, 9002);
+INSERT INTO exclusividades VALUES ('EX-120712',3, 'Oro' ,36, NULL, 9003);
+
+-- labels
+INSERT INTO labels VALUES (9001,'No way home');
+INSERT INTO labels VALUES (9001,'Euphoria');
+INSERT INTO labels VALUES (9001,'Peaky Blinders');
+
+-- etapas
+INSERT INTO etapas VALUES ('26/01/2022', NULL, 36, 'Miembro', 9001 , 4026 );
+INSERT INTO etapas VALUES ('02/03/2021', NULL, 10, 'Miembro', 9001 , 4025 );
+INSERT INTO etapas VALUES ('12/08/2020', NULL, 10, 'Miembro', 9003 , 4027 );
+
+
+-- contenidos
+INSERT INTO contenidos VALUES (45467, 'Resumen Next', '04/03/22' , NULL, 1, 9001);
+INSERT INTO contenidos VALUES (45468, 'Critica The Batman', '04/03/22' , NULL, 1, 9001);
+INSERT INTO contenidos VALUES (45469, 'Doctor House T1', '09/12/18' , NULL, 2, 9003);
+--
+INSERT INTO contenidos VALUES (45470, 'FIFA22', '06/03/22' , 'TOTY', 1, 9001);
+INSERT INTO contenidos VALUES (45471, 'COFFETV', '03/03/22' , 'Ver peliculas', 1, 9001);
+INSERT INTO contenidos VALUES (45472, 'ASMR', '24/08/19' , NULL, 2, 9003);
+--
+INSERT INTO contenidos VALUES (45473, 'Sitiación del canal', '22/05/17' , NULL, 1, 9002);
+INSERT INTO contenidos VALUES (45474, 'Para suscriptores', '21/01/22' , NULL, 1, 9002);
+INSERT INTO contenidos VALUES (45475, 'Redes sociales', '26/07/16' , NULL, 2, 9003);
+
+-- videos
+INSERT INTO videos VALUES (45467, 10);
+INSERT INTO videos VALUES (45468, 8);
+INSERT INTO videos VALUES (45469, 15);
+
+-- streamings
+INSERT INTO streamings VALUES (45470,'06/03/22', '06/03/2022',240);
+INSERT INTO streamings VALUES (45471, '03/03/2022' , '06/03/2022', 140);
+INSERT INTO streamings VALUES (45472, '12/10/19','06/03/2022',380);
+
+-- posts
+INSERT INTO posts VALUES (45473,'vamos a estar jugando un PREGUNTAS Y RESPUESTAS DE HSM');
+INSERT INTO posts VALUES (45474, 'El Miércoles 2 De Febrero Vuelve #TeLoResumo');
+INSERT INTO posts VALUES (45475, 'Compra boletos para el tour del Camino del Héroe');
+
+
+-- likes
+INSERT INTO likes VALUES (1,45467);
+INSERT INTO likes VALUES (2,45468);
+INSERT INTO likes VALUES (3,45469);
+
+-- CICLO 1: PoblarNoOK 2
+
+-- usuarios
+/* No deberia permitir id de un tipo no definido*/
+INSERT INTO usuarios VALUES ('45','johan@gmail.com','Juan', '04/03/2010');
+-- cuentas
+/* No deberia permitir que se inserten filas con atributos NULL con restricción*/
+INSERT INTO cuentas VALUES (9001,NULL, '26/08/2017', 0, 1);
+-- exclusividades
+/* No deberia permitir que se inserten filas con PK's iguales*/
+INSERT INTO exclusividades VALUES (1205,1, 'Bronce', 5, NULL, 9001);
+-- etapas
+/* No deberia permitir que se inserten filas con atributos cuyo tipo no sea el definido*/
+INSERT INTO etapas VALUES ('26/01/2022', NULL, 36, 'Miembro', 9001 , '4026' );
+-- contenidos
+/* No deberia permitir que se inserten filas con Fechas en otros formatos  */
+INSERT INTO contenidos VALUES (45467, 'Resumen Next', NULL , NULL, 1, 9001);
+
+-- CICLO 1: PoblarNoOK 3
+
+-- usuarios
+/* Correo sin almenos un @*/
+INSERT INTO usuarios VALUES (4,'johangmail.com','Juan', '04/03/2010');
+-- cuentas
+/* La fecha de creacion no deber ser mayor a la del sistema*/
+INSERT INTO cuentas VALUES (9004,'Johan', '26/08/2040', 9999, 1);
+-- exclusividades
+/* El codigo no es en el formato correcto */
+INSERT INTO exclusividades VALUES (1205,1, 'Bronce', 8, NULL, 9004);
+-- etapas
+/* El precio es menor que 0*/
+INSERT INTO etapas VALUES ('26/01/2022', NULL, -10, 'Miembro', 9001 , 4028 );
+-- contenidos
+/*  Fecha de contenido incoherente */
+INSERT INTO contenidos VALUES (45476,'ErrorOK', '12/09/1900' , NULL, 1, 9001);
+
+
+--CICLO 1: XPoblar(Eliminar los datos)
+
+-- likes
+DELETE FROM likes;
+
+-- posts
+DELETE FROM posts;
+
+--streamings
+DELETE FROM streamings;
+
+--videos
+DELETE FROM videos;
+
+--contenidos
+DELETE FROM contenidos;
+
+--etapas
+DELETE FROM etapas;
+
+--labels
+DELETE FROM labels;
+
+--exclusividades
+DELETE FROM exclusividades;
+
+--suscripciones
+DELETE FROM suscripciones;
+
+--cuentas
+DELETE FROM cuentas;
+
+--usuarios
+DELETE FROM usuarios;
+
+---CICLO 1: Atributos
+
+--Usuarios
+ALTER TABLE usuarios ADD (
+    CONSTRAINT CKECKDATEU CHECK(createdAt> TO_DATE ('14/05/2005','DD/MM/YYYY'))
+);
+
+--Likes
+--ninguna
+
+--Cuentas
+ALTER TABLE cuentas ADD (
+    CONSTRAINT CKECKDATEC CHECK(createdAt> TO_DATE ('14/05/2005','DD/MM/YYYY')),
+    CONSTRAINT CKECKSUBS CHECK(suscribers>=0)
+);
+
+--suscripciones
+ALTER TABLE suscripciones ADD (
+    CONSTRAINT CDATES CHECK(createdAt> TO_DATE ('14/05/2005','DD/MM/YYYY'))
+);
+
+--etapas
+ALTER TABLE etapas ADD (
+    CONSTRAINT CKECKSTART CHECK(startAt> TO_DATE ('14/05/2005','DD/MM/YYYY')),
+    CONSTRAINT CKECKEND CHECK(startAt< endAt),
+    CONSTRAINT PRECIOE CHECK(price>=0),
+    CONSTRAINT STATUS CHECK(status IN ('Activa', 'Terminada', 'Cancelada'))   
+);
+
+--exclusividades
+ALTER TABLE exclusividades ADD (
+    CONSTRAINT TCODE CHECK(code LIKE('EX-%')),
+    CONSTRAINT TORDEN CHECK(e_order>=0),
+    CONSTRAINT PRECIOEX CHECK(price>=0),
+    CONSTRAINT DIASMIN CHECK(duration>=1),
+    CONSTRAINT DIASMAX CHECK(duration<=90)
+);   
+
+
+--contenidos
+ALTER TABLE contenidos ADD (
+    CONSTRAINT CKECKDATECO CHECK(publishingDate> TO_DATE ('14/05/2005','DD/MM/YYYY'))
+    );
+
+--videos
+ALTER TABLE videos ADD (
+    CONSTRAINT DURACIONMINV CHECK(duration>0),
+    CONSTRAINT DURACIONMAXV CHECK(duration<1380)
+);
+
+ 
+--streamings
+ALTER TABLE streamings ADD (
+    CONSTRAINT CKECKDATEPSTR CHECK(plannedDate> TO_DATE ('14/05/2005','DD/MM/YYYY')),
+    CONSTRAINT DURACIONMINS CHECK(duration>0),
+    CONSTRAINT DURACIONMAXS CHECK(duration<1380)
+);
+
+
+--posts
+ALTER TABLE posts ADD (
+    CONSTRAINT TEXT CHECK(text LIKE('% %') 
+    OR text LIKE('% % %')
+    OR text LIKE('% % % %') 
+    OR text LIKE('% % % % %') 
+    OR text LIKE('% % % % % %') 
+    OR text LIKE('% % % % % % %') 
+    OR text LIKE('% % % % % % % %') 
+    OR text LIKE('% % % % % % % % %') 
+    OR text LIKE('% % % % % % % % % %'))
+);
+
+--labels
+ALTER TABLE labels ADD (
+    CONSTRAINT CKECKLABEL1 CHECK(label LIKE('%\_%') ESCAPE '\'),
+    CONSTRAINT CKECKLABEL2 CHECK(label NOT LIKE('#"%')ESCAPE '\' ),
+    CONSTRAINT CKECKLABEL3 CHECK(label NOT LIKE('%\_%\_%')ESCAPE '\')
+);
+
+ALTER TABLE labels DROP CONSTRAINT CKECKLABEL1;
+ALTER TABLE labels DROP CONSTRAINT CKECKLABEL2;
+ALTER TABLE labels DROP CONSTRAINT CKECKLABEL3;
+---CICLO 1:Primarias 
+
+--contenidos
+ALTER TABLE contenidos ADD (
+    CONSTRAINT CKECKIDC CHECK(id  > 0)
+);
+-- usuarios
+ALTER TABLE usuarios ADD (
+    CONSTRAINT CKECKIDU CHECK(id  > 0)
+);
+-- cuentas
+ALTER TABLE cuentas ADD (
+    CONSTRAINT CKECKIDCU CHECK(id  > 0)
+);
+-- suscripciones
+ALTER TABLE suscripciones ADD (
+    CONSTRAINT CKECKS CHECK(id  > 0)
+);
+
+---CICLO1:Unicas
+
+ --usuarios
+ALTER TABLE usuarios ADD (
+    CONSTRAINT EMAILA CHECK(email LIKE('%@%.%')),
+    CONSTRAINT EMAILD CHECK(email NOT LIKE('%@%@%'))
+);
+
+--CICLO 1: Foráneas
+
+-- likes
+ALTER TABLE likes ADD (
+    CONSTRAINT CKECKUID CHECK(Usuarios_id > 0),
+    CONSTRAINT CKECKCID CHECK(Contenidos_id > 0)
+);
+
+-- contenidos
+ALTER TABLE contenidos ADD (
+    CONSTRAINT CKECKUIDC CHECK(Usuarios_id > 0),
+    CONSTRAINT CKECKEIDC CHECK(Exclusividades_id > 0)
+);
+
+-- videos
+ALTER TABLE videos ADD (
+    CONSTRAINT CKECKCIDV CHECK(Contenidos_id > 0)
+);
+-- streamings
+ALTER TABLE streamings ADD (
+    CONSTRAINT CKECKCIDS CHECK(Contenidos_id > 0)
+);
+
+-- posts
+ALTER TABLE posts ADD (
+    CONSTRAINT CKECKCIDP CHECK(Contenidos_id > 0)
+);
+-- etapas
+ALTER TABLE etapas ADD (
+    CONSTRAINT CKECKSIDE CHECK(Suscripciones_id > 0),
+    CONSTRAINT CKECKEIDE CHECK(Exclusividades_id > 0)
+);
+-- suscripciones
+ALTER TABLE suscripciones ADD (
+    CONSTRAINT CKECKCIDSU CHECK(Cuentas_id > 0),
+    CONSTRAINT CKECKSIDS CHECK(SuscritoA > 0)
+);
+-- cuentas
+ALTER TABLE cuentas ADD (
+    CONSTRAINT CKECKCIDCU CHECK(Usuarios_id > 0)
+);
+-- labels
+ALTER TABLE labels ADD (
+    CONSTRAINT CKECKEIDL CHECK(Exclusividades_id > 0)
+);
+
+-- exclusividades
+ALTER TABLE exclusividades ADD (
+    CONSTRAINT CKECKCIDE CHECK(Cuentas_id > 0)
+);
+
+
+-- CICLO 1: PoblarNoOK (2)
+/*
+-- usuarios
+Correo sin almenos un @
+INSERT INTO usuarios VALUES (4,'johangmail.com','Juan', '04/03/2010');
+
+Esta protegido por la restriccion de usuarios EMAILA y EMAILD
+
+-- cuentas
+ La fecha de creacion no deber ser mayor a la del sistema
+INSERT INTO cuentas VALUES (9004,'Johan', '26/08/2040', 1);
+
+Esta protegido por la restriccion CKECKDATEC
+
+-- exclusividades
+El codigo no tiene el formato correcto
+INSERT INTO exclusividades VALUES (1205,1, 'Bronce', 8, NULL, 9004);
+
+Esta protegido por la restriccion TCODE
+
+-- etapas
+El precio es menor que 0
+INSERT INTO etapas VALUES ('26/01/2022', NULL, -10, 'Miembro', 9001 , 4028 );
+
+Esta protegido por PRECIOE
+
+-- contenidos
+Fecha de contenido incoherente 
+INSERT INTO contenidos VALUES (45476,'ErrorOK', '12/09/1900' , NULL, 1, 9001);
+
+Esta protefido por CHECHDATECO
+
+*/
+
+
+---Costruccion: consultando
+
+--CICLO 1: consultar
+SELECT name, suscribers FROM cuentas
+ORDER BY suscribers DESC;
+
+
+-- CICLO 1: World record Streaming mas largo
+SELECT title, duration, description FROM contenidos JOIN streamings ON (id = Contenido_id)
+WHERE duration = (SELECT MAX(duration) FROM streamings);
+
+
+
+
+---Nuevamente Poblando 
+
+--Usuarios
+insert into usuarios (id, email, name, createdAt) values (1, 'phelder0@furl.net', 'Patrizia Helder', '07/12/2010');
+insert into usuarios (id, email, name, createdAt) values (2, 'lmcewen1@drupal.org', 'Lyle McEwen', '25/08/2008');
+insert into usuarios (id, email, name, createdAt) values (3, 'mwoodwind2@nytimes.com', 'Murial Woodwind', '25/11/2007');
+insert into usuarios (id, email, name, createdAt) values (4, 'mfrancino3@tinypic.com', 'Mauricio Francino', '11/01/2007');
+insert into usuarios (id, email, name, createdAt) values (5, 'asimmens4@fotki.com', 'Allissa Simmens', '26/06/2017');
+insert into usuarios (id, email, name, createdAt) values (6, 'lboggs5@amazon.com', 'Liana Boggs', '21/04/2007');
+insert into usuarios (id, email, name, createdAt) values (7, 'wpeterson6@hp.com', 'Wileen Peterson', '09/10/2014');
+insert into usuarios (id, email, name, createdAt) values (8, 'jdempsey7@xrea.com', 'Jemimah Dempsey', '10/11/2021');
+insert into usuarios (id, email, name, createdAt) values (9, 'mlowfill8@behance.net', 'Marsh Lowfill', '15/11/2020');
+insert into usuarios (id, email, name, createdAt) values (10, 'apeasey9@who.int', 'Alaine Peasey', '27/11/2019');
+insert into usuarios (id, email, name, createdAt) values (11, 'canana@wikipedia.org', 'Chelsy Anan', '14/08/2010');
+insert into usuarios (id, email, name, createdAt) values (12, 'klazerb@soup.io', 'Kelley Lazer', '09/09/2008');
+insert into usuarios (id, email, name, createdAt) values (13, 'mgarryc@redcross.org', 'Mendie Garry', '17/01/2011');
+insert into usuarios (id, email, name, createdAt) values (14, 'eclerked@ucoz.com', 'Esdras Clerke', '27/12/2006');
+insert into usuarios (id, email, name, createdAt) values (15, 'maucotte@pinterest.com', 'Merrili Aucott', '14/08/2008');
+insert into usuarios (id, email, name, createdAt) values (16, 'bgorhamf@cmu.edu', 'Baxie Gorham', '26/07/2020');
+insert into usuarios (id, email, name, createdAt) values (17, 'bhakingg@gnu.org', 'Brandie Haking', '04/06/2018');
+insert into usuarios (id, email, name, createdAt) values (18, 'gbignoldh@moonfruit.com', 'Gaven Bignold', '06/05/2017');
+insert into usuarios (id, email, name, createdAt) values (19, 'bkulleri@github.io', 'Bertine Kuller', '10/04/2010');
+insert into usuarios (id, email, name, createdAt) values (20, 'mthackhamj@51.la', 'Mead Thackham', '04/01/2018');
+
+--- cuentas
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (133, 'alocarno0', '30/05/2019', 27857, 1);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (258, 'ftzuker1', '04/03/2018', 97632, 2);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (383, 'ebraunston2', '08/01/2021', 64857, 3);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (508, 'sremmer3', '30/12/2011', 96601, 4);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (633, 'lgerge4', '14/06/2016', 5933, 5);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (758, 'ccappell5', '24/11/2007', 23138, 6);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (883, 'pgrimsley6', '11/04/2014', 97277, 7);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1008, 'rswindon7', '30/05/2019', 69594, 8);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1133, 'ccleynman8', '05/01/2015', 5853, 9);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1258, 'mhebdon9', '22/08/2007', 47347, 10);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1383, 'jmckimma', '27/02/2007', 31582, 11);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1508, 'fparmeterb', '19/01/2015', 70957, 12);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1633, 'cgalloc', '15/03/2012', 2418, 13);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1758, 'cbrideoked', '01/04/2019', 83223, 14);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (1883, 'coregane', '12/12/2014', 29173, 15);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (2008, 'kandresf', '19/11/2005', 36528, 16);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (2133, 'dweing', '02/08/2019', 85604, 17);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (2258, 'lcatfordh', '17/11/2007', 68361, 18);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (2383, 'fbelamyi', '03/07/2005', 27063, 19);
+insert into cuentas (id, name, createdAt, suscribers, usuarios_id) values (2508, 'lkezarj', '01/10/2005', 33036, 20);
+
+-- exclusividades
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-827439', 955, 'Witch Hazel', 856753545, 85, 133);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-522956', 675, 'Chaetomium globosum', 265106392, 57, 258);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-503852', 292, 'Norethindrone Acetate', 545820119, 37, 383);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-263208', 333, 'Abstral', 474518564, 70, 508);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-549368', 172, 'Venlafaxine Hydrochloride', 894627838, 42, 633);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-946751', 914, 'WINRHO', 517275827, 2, 758);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-221459', 571, 'pain relief', 240802562, 61, 883);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-825903', 45, 'Maximum Strength', 802636775, 76, 1008);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-745070', 474, 'Lavender Hand Sanitizer', 234655698, 19, 1133);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-385222', 847, 'BYDUREON', 519844217, 51, 1258);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-085741', 615, 'Metronidazole', 317951798, 6, 1383);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-371094', 22, 'Glucagon', 116339545, 75, 1508);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-125003', 883, 'Laxative', 17654374, 25, 1633);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-590109', 966, 'Isoniazid', 321433042, 67, 1758);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-383236', 617, 'Carvedilol', 452655210, 10, 1883);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-794114', 947, 'Ciclopirox', 748751924, 49, 2008);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-820033', 345, 'Rhus Tox. e fol. 4', 737791153, 14, 2133);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-207507', 456, 'Alprazolam', 300030473, 37, 2258);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-879607', 291, 'Nitroglycerin In Dextrose', 531252159, 23, 2383);
+insert into exclusividades (code, e_order, name, price, duration, cuentas_id) values ('EX-268539', 148, 'Caduet', 381766026, 3, 2508);
+
+
+
+
+-- suscripciones
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (223, '05/07/2019', 'nec molestie sed', 133, 2508);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (446, '03/07/2011', 'vitae mattis nibh ligula', 258, 2383);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (669, '20/06/2013', null, 383, 2258);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (892, '17/12/2019', null, 508, 2133);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (1115, '03/10/2014', null, 633, 2008);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (1338, '14/12/2008', 'sit amet', 758, 1883);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (1561, '12/04/2021', 'eget vulputate ut ultrices vel', 883, 1758);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (1784, '20/05/2021', 'leo maecenas pulvinar', 1008, 1633);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (2007, '04/11/2012', 'elit ac', 1133, 1508);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (2230, '08/10/2019', null, 1258, 1383);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (2453, '25/04/2018', null, 1383, 1258);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (2676, '17/04/2010', 'ut erat curabitur', 1508, 1133);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (2899, '17/01/2018', 'ut erat id', 1633, 1008);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (3122, '28/03/2014', 'nisi volutpat eleifend donec ut dolor', 1758, 883);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (3345, '01/01/2009', 'sapien non mi', 1883, 758);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (3568, '12/02/2019', 'lacus at velit vivamus vel', 2008, 633);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (3791, '24/07/2021', null, 2133, 508);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (4014, '25/10/2007', 'luctus et', 2258, 383);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (4237, '20/07/2013', 'pellentesque volutpat dui maecenas tristique', 2383, 258);
+insert into suscripciones (id, createdAt, detail, cuentas_id, suscritoA) values (4460, '12/06/2015', 'vel accumsan tellus nisi eu', 2508, 133);
+
+
+-- etapas
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('28/07/2010', null, 614483351, 'Terminada', 133, 223);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('18/11/2008', '09/06/2021', 267433811, 'Terminada', 258, 446);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('02/12/2013', '02/06/2016', 94064248, 'Terminada', 383, 669);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('08/12/2007', '24/06/2021', 295718347, 'Cancelada', 508, 892);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('20/08/2008', null, 815069414, 'Terminada', 633, 1115);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('15/02/2012', '26/02/2021', 511203890, 'Terminada', 758, 1338);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('04/01/2006', '28/09/2017', 824847852, 'Activa', 883, 1561);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('04/01/2010', null, 952591658, 'Activa', 1008, 1784);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('26/03/2008', '06/02/2020', 696215544, 'Activa', 1133, 2007);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('25/02/2014', '30/05/2020', 741785490, 'Cancelada', 1258, 2230);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('16/09/2005', null, 354905887, 'Activa', 1383, 2453);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('02/06/2005', '20/06/2019', 501101886, 'Terminada', 1508, 2676);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('20/12/2013', '01/01/2017', 88073795, 'Activa', 1633, 2899);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('09/02/2006', '23/01/2018', 221528393, 'Cancelada', 1758, 3122);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('15/01/2015', null, 308262423, 'Cancelada', 1883, 3345);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('21/02/2013', '14/01/2019', 106019314, 'Cancelada', 2008, 3568);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('24/06/2006', '07/04/2016', 815675862, 'Cancelada', 2133, 3791);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('09/06/2011', '21/12/2016', 618253953, 'Cancelada', 2258, 4014);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('21/03/2007', '20/10/2015', 768859146, 'Activa', 2383, 4237);
+insert into etapas (startAt, endAt, price, status, exclusividades_id, suscripciones_id) values ('21/03/2006', null, 110984277, 'Activa', 2508, 4460);
+
+
+-- contenido
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (3477, 'sed', '15/05/2008', 'bibendum felis', 1, 133);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (7037, 'est', '02/01/2020', null, 2, 258);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (10597, 'id', '10/02/2007', 'in hac', 3, 383);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (14157, 'scelerisque', '16/11/2021', 'urna ut tellus', 4, 508);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (17717, 'platea', '22/06/2013', null, 5, 633);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (21277, 'in', '22/05/2019', null, 6, 758);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (24837, 'sollicitudin vitae', '17/10/2006', 'est et tempus', 7, 883);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (28397, 'interdum mauris', '16/04/2015', 'augue vel accumsan', 8, 1008);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (31957, 'vestibulum quam', '31/03/2016', 'posuere nonummy integer', 9, 1133);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (35517, 'elit', '17/08/2011', null, 10, 1258);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (39077, 'nunc', '08/10/2009', 'lectus pellentesque at', 11, 1383);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (42637, 'odio', '09/01/2013', 'libero quis', 12, 1508);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (46197, 'morbi vestibulum', '16/09/2016', 'eget eleifend luctus', 13, 1633);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (49757, 'odio consequat', '27/07/2016', 'eget tincidunt eget', 14, 1758);
+insert into contenidos (id, title, publishingDate, description, usuarios_id, exclusividades_id) values (53317, 'mus etiam', '07/04/2009', 'etiam faucibus', 15, 1883);
+
+-- videos
+insert into videos (contenidos_id, duration) values (3477, 168);
+insert into videos (contenidos_id, duration) values (7037, 1296);
+insert into videos (contenidos_id, duration) values (10597, 354);
+insert into videos (contenidos_id, duration) values (14157, 487);
+insert into videos (contenidos_id, duration) values (17717, 166);
+
+--streamings
+insert into streamings (contenidos_id, plannedDate, actualDate, duration) values (21277, '28/12/2006', '03/08/2020', 386);
+insert into streamings (contenidos_id, plannedDate, actualDate, duration) values (24837, '29/12/2006', null, 705);
+insert into streamings (contenidos_id, plannedDate, actualDate, duration) values (28397, '16/03/2007', '13/01/2019', 1123);
+insert into streamings (contenidos_id, plannedDate, actualDate, duration) values (31957, '10/05/2012', '25/04/2020', 952);
+insert into streamings (contenidos_id, plannedDate, actualDate, duration) values (35517, '28/08/2007', null, 599);
+
+--posts
+insert into posts (contenidos_id, text) values (39077, 'ullamcorper augue a suscipit nulla elit');
+insert into posts (contenidos_id, text) values (42637, 'sit amet diam in magna');
+insert into posts (contenidos_id, text) values (46197, 'lobortis ligula sit amet');
+insert into posts (contenidos_id, text) values (49757, 'phasellus id sapien in sapien iaculis congue');
+insert into posts (contenidos_id, text) values (53317, 'aliquam lacus');
+
+--labels
+insert into labels (exclusividades_id, label) values (133, '733_vlb');
+insert into labels (exclusividades_id, label) values (258, '408_eca');
+insert into labels (exclusividades_id, label) values (383, '028_grt');
+insert into labels (exclusividades_id, label) values (508, '033_roj');
+insert into labels (exclusividades_id, label) values (633, '321_vwo');
+insert into labels (exclusividades_id, label) values (758, '333_tyl');
+insert into labels (exclusividades_id, label) values (883, '519_rlq');
+insert into labels (exclusividades_id, label) values (1008, '979_xgq');
+insert into labels (exclusividades_id, label) values (1133, '178_qqy');
+insert into labels (exclusividades_id, label) values (1258, '660_uqk');
+insert into labels (exclusividades_id, label) values (1383, '252_xnf');
+insert into labels (exclusividades_id, label) values (1508, '314_yfn');
+insert into labels (exclusividades_id, label) values (1633, '008_cwz');
+insert into labels (exclusividades_id, label) values (1758, '425_ihf');
+insert into labels (exclusividades_id, label) values (1883, '280_qdn');
+insert into labels (exclusividades_id, label) values (2008, '829_jev');
+insert into labels (exclusividades_id, label) values (2133, '813_ctu');
+insert into labels (exclusividades_id, label) values (2258, '749_prz');
+insert into labels (exclusividades_id, label) values (2383, '447_utp');
+insert into labels (exclusividades_id, label) values (2508, '817_dfx');
+
+--likes
+insert into likes (usuarios_id, contenidos_id) values (1, 3477);
+insert into likes (usuarios_id, contenidos_id) values (2, 7037);
+insert into likes (usuarios_id, contenidos_id) values (3, 10597);
+insert into likes (usuarios_id, contenidos_id) values (4, 14157);
+insert into likes (usuarios_id, contenidos_id) values (5, 17717);
+insert into likes (usuarios_id, contenidos_id) values (6, 21277);
+insert into likes (usuarios_id, contenidos_id) values (7, 24837);
+insert into likes (usuarios_id, contenidos_id) values (8, 28397);
+insert into likes (usuarios_id, contenidos_id) values (9, 31957);
+insert into likes (usuarios_id, contenidos_id) values (10, 35517);
+insert into likes (usuarios_id, contenidos_id) values (11, 39077);
+insert into likes (usuarios_id, contenidos_id) values (12, 42637);
+insert into likes (usuarios_id, contenidos_id) values (13, 46197);
+insert into likes (usuarios_id, contenidos_id) values (14, 49757);
+insert into likes (usuarios_id, contenidos_id) values (15, 53317);
+insert into likes (usuarios_id, contenidos_id) values (16, 56877);
+insert into likes (usuarios_id, contenidos_id) values (17, 60437);
+insert into likes (usuarios_id, contenidos_id) values (18, 63997);
+insert into likes (usuarios_id, contenidos_id) values (19, 67557);
+insert into likes (usuarios_id, contenidos_id) values (20, 71117);
+--------------------
+-- likes
+DROP TABLE likes;
+
+-- posts
+DROP TABLE posts;
+
+--streamings
+DROP TABLE streamings;
+
+--videos
+DROP TABLE videos;
+
+--contenidos
+DROP TABLE contenidos;
+
+--etapas
+DROP TABLE etapas;
+
+--labels
+DROP TABLE labels;
+
+--exclusividades
+DROP TABLE exclusividades;
+
+--suscripciones
+DROP TABLE suscripciones;
+
+--cuentas
+DROP TABLE cuentas;
+
+--usuarios
+DROP TABLE usuarios;
